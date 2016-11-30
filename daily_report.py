@@ -93,7 +93,8 @@ def print_report(report):
 class GenHtmlTable(object):
     def gen_people_tbody(self, people, count):
 
-        return '''<tbody>
+        return '''\
+    <tbody>
         <tr class="trac-group">
           <th colspan="100">
             <h2 class="report-result">
@@ -142,7 +143,7 @@ class GenHtmlTable(object):
 
             if  status == 'reviewing':
                 background_color = 'style="background-color: #C7EDCC;"'
-            elif status == 'resovled' or status == 'closed':
+            elif status == 'resolved' or status == 'closed':
                 background_color = 'style="background-color: #CCCCCC; font-style: italic;"'
         try:
             style_index = style_map.index(column) + 1
@@ -172,6 +173,9 @@ class GenHtmlTable(object):
             for data_type, data_list in report[people].iteritems():
                 table_html += self.gen_ticket_tbody(data_type, data_list)
 
+        return gen_html_template(table_html)
+
+    def gen_html_template(self, table_html):
         html = '''
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
