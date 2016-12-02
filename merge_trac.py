@@ -6,6 +6,7 @@ from lxml import etree
 import pickle
 import requests
 requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
+from multiprocessing import Process, Queue, Pool
 
 def login(loginUrl):
     with open(".auth", "r") as f:
@@ -25,15 +26,14 @@ def login(loginUrl):
                           urllib.urlencode(data), 
                           headers={'Content-Type' : 'application/x-www-form-urlencoded'}, 
                           verify=False)
-    
 
     with open('.cookies', 'w') as f:
         pickle.dump(requests.utils.dict_from_cookiejar(session.cookies), f)
 
     return session
 
-def get_login_seesion(loginUrl):
 
+def get_login_seesion(loginUrl):
     try:
         with open('.cookies', 'r') as f:
             cookies = requests.utils.cookiejar_from_dict(pickle.load(f))
@@ -43,6 +43,7 @@ def get_login_seesion(loginUrl):
     except IOError:
         print 'Login ' + loginUrl
         return login(loginUrl)
+
 
 def get_report_content(reportUrl, loginUrl):
     print "Get Data From: " + reportUrl
@@ -76,6 +77,7 @@ def gen_html_template(table_html):
 
     return html
 
+
 def gen_people_tbody(people, count):
 
     return '''\
@@ -100,6 +102,7 @@ def gen_report_html(report_map):
     pd1_1 = ['andy.huang', 'daniel.yang', 'jiarung.yeh', 'tingyu.lu']
     pd1_2 = ['carl.yang', 'hank.kao', 'leo.shih', 'longline.yang']
     people_list = pd1_1 + pd1_2 + ['chim.pan', 'sadik.hung', 'shine.jian']
+
     def people_key(item):
         try:
             return people_list.index(item[0])
@@ -115,6 +118,7 @@ def gen_report_html(report_map):
             html += etree.tostring(tbody)
 
     return html
+
 
 def merge_table(html_list):
     page_list = [etree.HTML(html).xpath(u'//table[@class="listing tickets"]')[0] for html in html_list]
@@ -134,6 +138,16 @@ def merge_table(html_list):
             group_idx += 1
 
     return report_map
+
+
+def worker(reportItem):
+    reportUrl, isLogin, tracName, tracUrl = reportItem
+    login = tracUrl + 'login/' if isLogin else None
+    result =  get_report_content(reportUrl, login).replace(tracName, tracUrl)
+
+    print "End: " + reportUrl
+    return result
+
 
 def main():
     if len(sys.argv) > 1:
@@ -155,23 +169,18 @@ def main():
         reportItemList = [taskItem, task2Item, bugItem]
         html_filename = 'test.html'
 
-    report_list = []
-    for reportItem in reportItemList:
-        reportUrl, isLogin, tracName, tracUrl = reportItem
-        login = tracUrl+'login/' if isLogin else None
-        report_list.append(get_report_content(reportUrl, login).replace(tracName, tracUrl))
 
-    #report_map = merge_table()
+
+    pool = Pool(len(reportItemList))
+    report_list = pool.map(worker, reportItemList)
+
     report_map = merge_table(report_list)
     table_html = gen_report_html(report_map)
     
     html = gen_html_template(table_html)
 
-
     with open(html_filename, 'w') as f:
         f.write(html)
-
-
 
 if __name__ == '__main__':
     main()
