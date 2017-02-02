@@ -99,10 +99,11 @@ def gen_people_tbody(people, count):
 
 
 def gen_report_html(report_map):
-    pd1_1 = ['andy.huang', 'daniel.yang', 'jiarung.yeh', 'tingyu.lu']
-    pd1_2 = ['carl.yang', 'hank.kao', 'leo.shih', 'longline.yang']
-    people_list = pd1_1 + pd1_2 + ['chim.pan', 'sadik.hung', 'shine.jian']
-
+    #pd1_1 = ['andy.huang', 'daniel.yang', 'jiarung.yeh', 'tingyu.lu']
+    #pd1_2 = ['carl.yang', 'hank.kao', 'leo.shih', 'longline.yang']
+    tech_leader = ['chim.pan', 'sadik.hung', 'shine.jian']
+    #people_list = pd1_1 + pd1_2 + tech_leader
+    people_list =  ['daniel.yang', 'jiarung.yeh', 'longline.yang', 'andy.huang', 'leo.shih', 'tingyu.lu', 'hank.kao', 'carl.yang'] + tech_leader
     def people_key(item):
         try:
             return people_list.index(item[0])
@@ -129,7 +130,7 @@ def merge_table(html_list):
     for idx in xrange(len(page_list)):
         page = page_list[idx]
         group = group_list[idx]
-        title = title_list[idx]        
+        title = title_list[idx]
         group_idx = 0
         for index in xrange(1, len(page), 2):
             tbody = page[index]
@@ -163,11 +164,14 @@ def main():
             reportItemList = [taskItem, task2Item, bugItem]
         html_filename = sys.argv[1]+'.html'
     else:
-        taskItem = ('https://trac.genienrm.com/ATM6/report/15', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
-        task2Item = ('https://trac.genienrm.com/ATM5/report/14', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
-        bugItem = ('https://trac.genienrm.com/TICKET/report/16', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
-        reportItemList = [taskItem, task2Item, bugItem]
-        html_filename = 'test.html'
+        taskItem1 = ('https://trac.genienrm.com/ATM6/report/28', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
+        taskItem2 = ('https://trac.genienrm.com/ATM6/report/29', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
+        taskItem3 = ('https://trac.genienrm.com/ATM5/report/22', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
+        taskItem4 = ('https://trac.genienrm.com/ATM5/report/23', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
+        bugItem1 = ('https://trac.genienrm.com/TICKET/report/40', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
+        bugItem2 = ('https://trac.genienrm.com/TICKET/report/41', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
+        reportItemList = [taskItem1, taskItem2, taskItem3, taskItem4, bugItem1, bugItem2]
+        html_filename = 'pd.html'
 
 
 
