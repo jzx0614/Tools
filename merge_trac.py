@@ -57,7 +57,7 @@ def get_report_content(reportUrl, loginUrl):
     return response.content
 
 
-def gen_html_template(table_html):
+def gen_html_template(title, table_html):
     html = '''\
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
@@ -66,14 +66,18 @@ def gen_html_template(table_html):
     <link rel="stylesheet" href="css/trac.css" type="text/css" />
     <link rel="stylesheet" href="css/report.css" type="text/css" />
     <link rel="tracwysiwyg.stylesheet" href="css/trac.css" />
+    <title> %s </title>
 </head>
 <body>
+    <h1 class="report-result">
+    %s
+    </h1>
     <table class="listing tickets">
 %s
     </table>
 </body>
 </html>
-    ''' % table_html
+    ''' % (title, title, table_html)
 
     return html
 
@@ -99,11 +103,19 @@ def gen_people_tbody(people, count):
 
 
 def gen_report_html(report_map):
-    #pd1_1 = ['andy.huang', 'daniel.yang', 'jiarung.yeh', 'tingyu.lu']
-    #pd1_2 = ['carl.yang', 'hank.kao', 'leo.shih', 'longline.yang']
-    tech_leader = ['chim.pan', 'sadik.hung', 'shine.jian']
-    #people_list = pd1_1 + pd1_2 + tech_leader
-    people_list =  ['daniel.yang', 'jiarung.yeh', 'longline.yang', 'andy.huang', 'leo.shih', 'tingyu.lu', 'hank.kao', 'carl.yang'] + tech_leader
+    people_list = ['yungyu.wang',
+                   'daniel.yang',
+                   'jiarung.yeh',
+                   'carl.yang',
+                   'longline.yang',
+                   'andy.huang',
+                   'leo.shih',
+                   'tingyu.lu',
+                   'chim.pan',
+                   'hank.kao',
+                   'sadik.hung',
+                   'shine.jian',
+                   '_captain']
     def people_key(item):
         try:
             return people_list.index(item[0])
@@ -112,7 +124,7 @@ def gen_report_html(report_map):
 
     html = ''
     for people, tbody_list in sorted(report_map.iteritems(), key=people_key):
-        ticket_num = reduce(lambda x, y: x+y , map(lambda x: len(x), tbody_list))
+        ticket_num = reduce(lambda x, y: x+y , map(lambda x: len(x[1]), tbody_list))
         html += gen_people_tbody(people, ticket_num)
         for tr, tbody in tbody_list:
             tbody.insert(0, tr)
@@ -144,7 +156,7 @@ def merge_table(html_list):
 def worker(reportItem):
     reportUrl, isLogin, tracName, tracUrl = reportItem
     login = tracUrl + 'login/' if isLogin else None
-    result =  get_report_content(reportUrl, login).replace(tracName, tracUrl)
+    result = get_report_content(reportUrl, login).replace(tracName, tracUrl)
 
     print "End: " + reportUrl
     return result
@@ -152,25 +164,21 @@ def worker(reportItem):
 
 def main():
     if len(sys.argv) > 1:
-        if sys.argv[1] == 'pd1':
-            taskItem = ('https://trac.genienrm.com/ATM6/report/28', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
-            task2Item = ('https://trac.genienrm.com/ATM5/report/22', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
-            bugItem = ('https://trac.genienrm.com/TICKET/report/40', 'https://trac.genienrm.com/TICKET/login', '/TICKET/', 'https://trac.genienrm.com/TICKET/')
-            reportItemList = [taskItem, task2Item, bugItem]
-        elif sys.argv[1] == 'pd2':
-            taskItem = ('https://trac.genienrm.com/ATM6/report/29', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
+        if sys.argv[1] == 'mbo':
+            taskItem = ('https://trac.genienrm.com/ATM6/report/25?max=500', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
+            task2Item = ('https://trac.genienrm.com/ATM5/report/21', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
+            bugItem = ('https://trac.genienrm.com/TICKET/report/24?max=500', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
+        elif sys.argv[1] == 'weekly':
+            taskItem = ('https://trac.genienrm.com/ATM6/report/29?max=200', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
             task2Item = ('https://trac.genienrm.com/ATM5/report/23', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
-            bugItem = ('https://trac.genienrm.com/TICKET/report/41', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
-            reportItemList = [taskItem, task2Item, bugItem]
+            bugItem = ('https://trac.genienrm.com/TICKET/report/42', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
+        reportItemList = [taskItem, task2Item, bugItem]
         html_filename = sys.argv[1]+'.html'
     else:
         taskItem1 = ('https://trac.genienrm.com/ATM6/report/28', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
-        taskItem2 = ('https://trac.genienrm.com/ATM6/report/29', False, '/ATM6/', 'https://trac.genienrm.com/ATM6/')
-        taskItem3 = ('https://trac.genienrm.com/ATM5/report/22', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
-        taskItem4 = ('https://trac.genienrm.com/ATM5/report/23', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
-        bugItem1 = ('https://trac.genienrm.com/TICKET/report/40', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
-        bugItem2 = ('https://trac.genienrm.com/TICKET/report/41', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
-        reportItemList = [taskItem1, taskItem2, taskItem3, taskItem4, bugItem1, bugItem2]
+        taskItem2 = ('https://trac.genienrm.com/ATM5/report/22', False, '/ATM5/', 'https://trac.genienrm.com/ATM5/')
+        bugItem = ('https://trac.genienrm.com/TICKET/report/40', True, '/TICKET/', 'https://trac.genienrm.com/TICKET/')
+        reportItemList = [taskItem1, taskItem2, bugItem]
         html_filename = 'pd.html'
 
 
@@ -181,7 +189,7 @@ def main():
     report_map = merge_table(report_list)
     table_html = gen_report_html(report_map)
     
-    html = gen_html_template(table_html)
+    html = gen_html_template(sys.argv[1], table_html)
 
     with open(html_filename, 'w') as f:
         f.write(html)
